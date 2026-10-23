@@ -1,0 +1,8 @@
+{
+  "name": "AJ Enterprise Solutions – Silphor Platform Control Center",
+  "description": "Centralized administrative control plane for managing Silphor Industrial (silphor.com) and Silphor Education (silper.co.in) platforms.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
