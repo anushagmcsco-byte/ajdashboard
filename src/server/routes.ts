@@ -82,18 +82,21 @@ apiRouter.post('/auth/login', async (req: Request, res: Response) => {
     }
 
     // Fetch user from DB or upsert
-    let userRecord = await db.select().from(controlUsers).where(eq(controlUsers.email, matchedAdmin.email));
-    if (userRecord.length === 0) {
-      const inserted = await db.insert(controlUsers).values({
-        uid: matchedAdmin.uid,
-        email: matchedAdmin.email,
-        fullName: matchedAdmin.fullName,
-        role: matchedAdmin.role,
-        mfaEnabled: true,
-        mfaSecret: matchedAdmin.mfaSecret,
-        status: 'ACTIVE',
-      }).returning();
-      userRecord = inserted;
+    try {
+      let userRecord = await db.select().from(controlUsers).where(eq(controlUsers.email, matchedAdmin.email));
+      if (userRecord.length === 0) {
+        await db.insert(controlUsers).values({
+          uid: matchedAdmin.uid,
+          email: matchedAdmin.email,
+          fullName: matchedAdmin.fullName,
+          role: matchedAdmin.role,
+          mfaEnabled: true,
+          mfaSecret: matchedAdmin.mfaSecret,
+          status: 'ACTIVE',
+        }).returning();
+      }
+    } catch (dbErr) {
+      console.warn('Database user sync notice:', dbErr);
     }
 
     // Require MFA Step
