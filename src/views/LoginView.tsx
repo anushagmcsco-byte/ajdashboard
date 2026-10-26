@@ -21,7 +21,7 @@ interface LoginViewProps {
 }
 
 export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
-  const [email, setEmail] = useState('admin@ajenterprises.hubli.in');
+  const [email, setEmail] = useState('anusha.gmcsco@gmail.com');
   const [password, setPassword] = useState('AJSuperAdmin@2026!');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -252,7 +252,18 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
             <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">
               Role Switcher Presets
             </div>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              <button
+                type="button"
+                onClick={() =>
+                  selectDemoRole('anusha.gmcsco@gmail.com', 'AJSuperAdmin@2026!')
+                }
+                className="text-[10px] p-2 bg-slate-950 hover:bg-slate-800 border border-slate-800 hover:border-emerald-700 rounded-lg text-slate-300 text-left transition-all cursor-pointer"
+              >
+                <div className="font-bold text-emerald-400 truncate">Executive Admin</div>
+                <div className="text-[9px] text-slate-400 truncate">anusha.gmcsco</div>
+              </button>
+
               <button
                 type="button"
                 onClick={() =>

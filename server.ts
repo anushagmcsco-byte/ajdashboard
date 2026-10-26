@@ -15,6 +15,19 @@ async function startServer() {
   const app = express();
   const PORT = Number(process.env.PORT) || 3000;
 
+  app.set('trust proxy', true);
+
+  // Cross-Origin Resource Sharing (CORS) & Preflight Handler
+  app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, x-correlation-id');
+    if (req.method === 'OPTIONS') {
+      return res.sendStatus(200);
+    }
+    next();
+  });
+
   app.use(express.json({ limit: '25mb' }));
   app.use(express.urlencoded({ extended: true, limit: '25mb' }));
 
@@ -26,7 +39,7 @@ async function startServer() {
   }
 
   // Health probe
-  app.get('/health', (_req, res) => {
+  app.get(['/health', '/api/health', '/api/v1/health'], (_req, res) => {
     res.json({
       status: 'UP',
       service: 'AJ ENTERPRISE SOLUTIONS – SILPHOR PLATFORM CONTROL CENTER',
@@ -34,8 +47,9 @@ async function startServer() {
     });
   });
 
-  // REST API v1
+  // REST API mounts
   app.use('/api/v1', apiRouter);
+  app.use('/api', apiRouter);
 
   // Vite Integration in Development
   const isProd = process.env.NODE_ENV === 'production';

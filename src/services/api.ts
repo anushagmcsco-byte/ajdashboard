@@ -60,10 +60,26 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
     headers.set('Authorization', `Bearer ${token}`);
   }
 
-  const res = await fetch(`/api/v1${endpoint}`, {
-    ...options,
-    headers,
-  });
+  let res: globalThis.Response;
+  try {
+    res = await fetch(`/api/v1${endpoint}`, {
+      ...options,
+      headers,
+    });
+
+    // Fallback if /api/v1 prefix is not matched on some serverless rewrite environments
+    if (res.status === 404) {
+      const fallbackRes = await fetch(`/api${endpoint}`, {
+        ...options,
+        headers,
+      });
+      if (fallbackRes.ok) {
+        res = fallbackRes;
+      }
+    }
+  } catch (netErr: any) {
+    throw new Error(`Network connection error: ${netErr.message || 'Server unreachable'}`);
+  }
 
   const rawText = await res.text();
 
@@ -73,7 +89,17 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
       const errorData = JSON.parse(rawText);
       errMessage = errorData.error || errorData.message || rawText || errMessage;
     } catch {
-      errMessage = rawText || errMessage;
+      // If error is HTML (e.g. 403 Forbidden or proxy gateway page), sanitize into clean readable message
+      if (rawText.includes('<html') || rawText.includes('<!DOCTYPE') || rawText.includes('<head>')) {
+        const titleMatch = rawText.match(/<title>([^<]+)<\/title>/i);
+        const h1Match = rawText.match(/<h1>([^<]+)<\/h1>/i);
+        const cleanTitle = h1Match?.[1] || titleMatch?.[1];
+        errMessage = cleanTitle
+          ? `Access Notice (${res.status}): ${cleanTitle}`
+          : `HTTP ${res.status}: Access restricted by server gateway.`;
+      } else {
+        errMessage = rawText || errMessage;
+      }
     }
 
     if (res.status === 401) {
